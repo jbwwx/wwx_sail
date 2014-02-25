@@ -1,0 +1,153 @@
+=a!dashboardLayout(
+  firstColumnContents:{
+    a!sectionLayout(
+      label:"Account Overview",
+      firstColumnContents:{
+        a!textField(
+          label:"Account ID",
+          readOnly:true,
+          disabled:false,
+          value:rf!Account_ID
+        ),
+        a!textField(
+          label:"Relationship ID",
+          readOnly:true,
+          disabled:false,
+          value:rf!Relationship_ID
+        ),
+        a!textField(
+          label:"Agreement Date",
+          readOnly:true,
+          disabled:false,
+          value:text(rf!Account_Agreement_Dt, "mmm d 'yy")
+        ),
+        a!textField(
+          label:"Open Date",
+          readOnly:true,
+          disabled:false,
+          value:text(rf!T3K_Account_Open_Dt, "mmm d 'yy")
+        )
+      },
+      secondColumnContents:{
+        a!textField(
+          label:"Short Name",
+          readOnly:true,
+          disabled:false,
+          value:rf!Account_Short_Nm
+        ),
+        a!paragraphField(
+          label:"Long Name",
+          readOnly:true,
+          disabled:false,
+          value:joinarray({rf!Account_Long_Nm_1, rf!Account_Long_Nm_2, rf!Account_Long_Nm_3, rf!Account_Long_Nm_4, rf!Account_Long_Nm_5}, char(13)&char(10))
+        )
+      }
+    ),
+    a!sectionLayout(
+      label:"Account Officers",
+      firstColumnContents:{
+        a!textField(
+          label:"Investment Officer",
+          readOnly:true,
+          disabled:false,
+          value:rf!Investment_Officer.Investment_Officer_Nm
+        ),
+        a!textField(
+          label:"Administrator",
+          readOnly:true,
+          disabled:false,
+          value:rf!Administrator.Administrator_Nm
+        ),
+        a!textField(
+          label:"Senior Administrator",
+          readOnly:true,
+          disabled:false,
+          value:rf!Senior_Administrator.Senior_Administrator_Nm
+        )
+      },
+      secondColumnContents:{
+        a!textField(
+          label:"Backup Investment Officer",
+          readOnly:true,
+          disabled:false,
+          value:rf!Backup_Investment_Officer.Backup_Investment_Officer_Nm
+        ),
+        a!textField(
+          label:"Backup Administrator",
+          readOnly:true,
+          disabled:false,
+          value:rf!BackupAdministrator.Backup_Administrator_Nm
+        ),
+        a!textField(
+          label:"Branch",
+          readOnly:true,
+          disabled:false,
+          value:rf!Branch.Branch_Nm
+        )
+      }
+    ),
+    a!sectionLayout(
+      label:"Service Requests",
+      firstColumnContents:{
+          load(
+          local!myPaging:a!pagingInfo(
+            startIndex:1,
+            batchSize:10,
+            sort: a!sortInfo(field:"pp.startTime", ascending:true)
+          ),
+          
+          with(
+          local!srGrid:queryrecord(
+            recordType: cons!WWX_SERVICE_REQUEST_RECORD,
+            query: rule!APN_querySelection(
+              fields:{"pp.id", "ProcessType", "Status", "pp.startTime", "TrustAccountNumber"},
+              filter:rule!APN_queryFilter(field:"TrustAccountNumber", operator:"=", value:tostring(rf!Account_ID)),
+              pagingInfo:local!myPaging
+            )
+          ),
+          if(local!srGrid.totalCount=0, 
+          a!textField(
+            label:"No Requests",
+            readOnly:true,
+            value:""
+          ),
+          a!gridField(
+            label:"",
+            totalCount:local!srGrid.totalCount,
+            columns:{
+              a!gridTextColumn(
+                label:"Request Type",
+                field:"pp.id",
+                data:local!srGrid.data.ProcessType,
+                alignment:"LEFT",
+                links:apply( a!recordLink(
+                  recordType:cons!WWX_SERVICE_REQUEST_RECORD,
+                  identifier:_,                  
+                  label:_),merge(local!srGrid.data.pp.id, local!srGrid.data.ProcessType) 
+                )
+              ),
+              a!gridTextColumn(
+                label:"Status",
+                field:"Status",
+                data:local!srGrid.data.Status,
+                alignment:"LEFT"
+              ),
+              a!gridTextColumn(
+                label:"Start Time",
+                field:"pp.startTime",
+                data:local!srGrid.data.pp.startTime,
+                alignment:"LEFT"
+              )              
+            },
+            identifiers:local!srGrid.data.pp.id,
+            value:local!myPaging,
+            saveInto:local!myPaging
+          ) /* gridField */
+          ) /* if */
+          ) /* with */
+          ) /* load */
+        
+      }
+    )
+  }
+)

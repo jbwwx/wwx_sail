@@ -1,0 +1,5 @@
+=rule!APN_listViewTemplate(
+	title:rf!ProcessType & " for:  " & rf!TrustAccountName,
+	details:"Account ID:  "&rf!TrustAccountNumber & "  Initiated by: "&rule!getUserDisplayName(rf!pp.initiator) &"  Status: "&rf!Status,
+	timestamp:rf!pp.startTime
+	)

@@ -1,0 +1,82 @@
+=
+load(
+      local!statuses:{"Initial Entry", "Submitted", "Complete"},
+      local!taskPaging:rule!APN_pagingInfoAll(),
+with(      
+      local!taskData:
+      getportalreportdatasubset(reportId:10458, pagingInfo: local!taskPaging,
+      contextIds:{ rf!pp.id }),       
+
+a!dashboardLayout(
+  firstColumnContents:{
+  a!milestoneField(
+    label:"Status",    
+    steps:local!statuses,
+    active:lookup(local!statuses, rf!Status, 1)
+  ),
+    a!sectionLayout(
+      label:"Request Details",
+      firstColumnContents:{
+        a!textField(
+          label:"Account ID",
+          readOnly:true,
+          disabled:false,
+          value:rf!TrustAccountNumber
+        ),
+        a!textField(
+          label:"Account Name",
+          readOnly:true,
+          disabled:false,
+          value:rf!TrustAccountName
+        ),
+        a!textField(
+          label:"Request Type",
+          readOnly:true,
+          disabled:false,
+          value:rf!ProcessType
+        ),
+        a!textField(
+          label:"Status",
+          readOnly:true,
+          disabled:false,
+          value:rf!Status
+        )
+      },
+      secondColumnContents:{
+        a!textField(
+          label:"Initiated by",
+          readOnly:true,
+          disabled:false,
+          value:rule!getuserdisplayname(rf!pp.initiator)
+        ),
+        a!textField(
+          label:"Start Time",
+          readOnly:true,
+          disabled:false,
+          value:text(rf!pp.startTime, "mmm d, yyyy")
+		)
+      }
+    ),
+      if(local!taskData.totalCount=0, a!textField(
+        label:"No Active Tasks",
+        readOnly:true,        
+        value:""
+      ),
+      a!gridField(
+        label:"Active Tasks",
+        totalCount:local!taskData.totalCount,
+        columns:{
+          a!gridTextColumn(label:local!taskData.columns[1].label, field:local!taskData.columns[1].field, data:local!taskData.data[1].cells.value),
+          a!gridTextColumn(label:local!taskData.columns[2].label, field:local!taskData.columns[2].field, data:getUserorGroupDisplayNamev2(local!taskData.data[2].cells.value)),
+          a!gridTextColumn(label:local!taskData.columns[3].label, field:local!taskData.columns[3].field, data:local!taskData.data[3].cells.value),
+          a!gridTextColumn(label:local!taskData.columns[5].label, field:local!taskData.columns[5].field, data:local!taskData.data[5].cells.value)
+        },     
+        value:local!taskPaging,
+        saveInto: local!taskPaging
+      ) /* gridField */
+      ) /* if */ 
+	
+ } /* dashboard 1st column contents */
+) /* dashboard layout */
+) /* with */
+) /* load */

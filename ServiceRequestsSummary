@@ -1,0 +1,47 @@
+=a!dashboardLayout(
+  firstColumnContents:{
+    a!sectionLayout(
+      label:"Request Details",
+      firstColumnContents:{
+        a!textField(
+          label:"Account ID",
+          readOnly:true,
+          disabled:false,
+          value:rf!TrustAccountNumber
+        ),
+        a!textField(
+          label:"Account Name",
+          readOnly:true,
+          disabled:false,
+          value:rf!TrustAccountName
+        ),
+        a!textField(
+          label:"Request Type",
+          readOnly:true,
+          disabled:false,
+          value:rf!ProcessType
+        ),
+        a!textField(
+          label:"Status",
+          readOnly:true,
+          disabled:false,
+          value:rf!Status
+        )
+      },
+      secondColumnContents:{
+        a!textField(
+          label:"Initiated by",
+          readOnly:true,
+          disabled:false,
+          value:rule!getuserdisplayname(rf!pp.initiator)
+        ),
+        a!textField(
+          label:"Start Time",
+          readOnly:true,
+          disabled:false,
+          value:text(rf!pp.startTime, "mmm d, yyyy")
+		)
+      }
+    )
+  }
+)

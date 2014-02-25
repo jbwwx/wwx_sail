@@ -1,0 +1,121 @@
+=
+load(
+      local!statuses:{"Initiation", "Awaiting Paperwork", "Due Diligence", "IGO Review", "Account Opening", "Account Accepted", "Funding"},
+      local!myPaging:rule!APN_pagingInfoAll(),
+      local!assetPaging:rule!APN_pagingInfoAll(),
+with(      
+      local!gridData:
+      getportalreportdatasubset(reportId:1659, pagingInfo: local!myPaging,
+      contextIds:{ }, filters: {'type!{http://types.appiancorp.com/ps}PortalReportFilter'(field:"15", operator:"EQUAL", value:rf!pp.id)}),
+      local!assetData:
+      getportalreportdatasubset(reportId:1660, pagingInfo: local!assetPaging,
+      contextIds:{ rf!pp.id }),       
+      
+a!dashboardLayout(
+  firstColumnContents:{
+  a!milestoneField(
+    label:"Status",    
+    steps:local!statuses,
+    active:lookup(local!statuses, rf!Status, 1)
+  ),
+    a!sectionLayout(
+      label:"Account Overview",
+      firstColumnContents:{
+      rule!APN_uiTextReadOnly(label:"Initiator",value:rf!pp.initiator),
+      rule!APN_uiTextReadOnly(label:"Account Services Coordinator",value:if(isnull(rf!AccountServicesCoordinator), "Unassigned", rf!AccountServicesCoordinator)),
+      rule!APN_uiDollarReadOnly(label:"Anticipated Market Value",value:rf!AnticipatedMV),
+      rule!APN_uiLinkField(
+          label:"Dashboard" , 
+          instructions:"Click to Open Account Dashboard" , 
+          links:rule!APN_uiSafeLink(uri:"http://cnn.com", label:"Link") ,
+          hideWhenEmpty:true
+          )
+      },
+      secondColumnContents:{
+          rule!APN_uiTextReadOnly(label:"Status",value:rf!Status),
+          rule!APN_uiTextReadOnly(label:"Account Type",value:rf!AccountType)
+        }
+      ),
+      a!sectionLayout(
+        label:"Account Information",
+        firstColumnContents:{
+          rule!APN_uiTextReadOnly(label:"Model ID",value:rf!ModelID),
+          rule!APN_uiTextReadOnly(label:"Minor Account Type",value:rf!MinorAcctType)
+
+        },
+        secondColumnContents:{
+          rule!APN_uiTextReadOnly(label:"Capacity",value:rf!Capacity),
+          rule!APN_uiTextReadOnly(label:"Investment Authority",value:rf!InvestmentAuth)
+        }
+      ),
+
+      if(local!gridData.totalCount=0, a!textField(
+        label:"No Affiliates",
+        readOnly:true,        
+        value:""        
+      ), 
+      a!gridField(
+        label:"Affiliates",        
+        totalCount:local!gridData.totalCount,
+        columns:{
+          a!gridTextColumn(
+            label:"Affiliate Name",
+            field:"8",
+            data:local!gridData.data[1].cells.value,
+            alignment:"LEFT"
+          ),
+          a!gridTextColumn(
+            label:"Taxpayer ID",
+            field:"9",
+            data:local!gridData.data[2].cells.value,
+            alignment:"LEFT"
+          ),
+          a!gridTextColumn(
+            label:"Affiliation",
+            field:"10",
+            data:local!gridData.data[3].cells.value,
+            alignment:"LEFT"
+          ),
+          a!gridTextColumn(
+            label:"Address",
+            field:"13",
+            data:local!gridData.data[4].cells.value,
+            alignment:"LEFT"
+          ),
+          a!gridTextColumn(
+            label:"PIN",
+            field:"24",
+            data:local!gridData.data[5].cells.value,
+            alignment:"LEFT"
+          )
+        },
+        identifiers:local!gridData.identifiers,
+        value:local!myPaging,        
+        saveInto:local!myPaging
+      ) /* grid */
+      ), /* if */
+      if(local!assetData.totalCount=0, a!textField(
+        label:"No Asset Transfers",
+        readOnly:true,        
+        value:""
+      ),
+      a!gridField(
+        label:"Asset Transfers",
+        totalCount:local!assetData.totalCount,
+        columns:{
+          a!gridTextColumn(label:local!assetData.columns[1].label, field:local!assetData.columns[1].field, data:local!assetData.data[1].cells.value),
+          a!gridTextColumn(label:local!assetData.columns[2].label, field:local!assetData.columns[2].field, data:local!assetData.data[2].cells.value),
+          a!gridTextColumn(label:local!assetData.columns[3].label, field:local!assetData.columns[3].field, data:local!assetData.data[3].cells.value),
+          a!gridTextColumn(label:local!assetData.columns[4].label, field:local!assetData.columns[4].field, data:local!assetData.data[4].cells.value),
+          a!gridTextColumn(label:local!assetData.columns[5].label, field:local!assetData.columns[5].field, data:local!assetData.data[5].cells.value),
+          a!gridTextColumn(label:local!assetData.columns[6].label, field:local!assetData.columns[6].field, data:local!assetData.data[6].cells.value)
+        },     
+        value:local!assetPaging,
+        saveInto: local!assetPaging
+      )
+      ) /* if */ 
+      
+  } /* dashboard column */
+) /* dashboard */
+) /* with */
+) /* load */
